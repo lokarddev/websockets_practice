@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"fmt"
 	"github.com/CloudyKit/jet/v6"
 	"github.com/gorilla/websocket"
 	"log"
@@ -109,6 +110,10 @@ func ListenToWsChannel() {
 			users := getUserList()
 			response.Users = users
 			BroadcastToAll(response)
+		case "broadcast":
+			response.Action = "broadcast"
+			response.Message = fmt.Sprintf("<strong>%s</strong>: %s", e.Username, e.Message)
+			BroadcastToAll(response)
 		}
 
 		//response.Action = "Got Here"
@@ -120,7 +125,9 @@ func ListenToWsChannel() {
 func getUserList() []string {
 	var users []string
 	for _, v := range clients {
-		users = append(users, v)
+		if v != "" {
+			users = append(users, v)
+		}
 	}
 	sort.Strings(users)
 	return users
