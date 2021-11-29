@@ -9,5 +9,6 @@ import (
 func Routes() http.Handler {
 	mux := pat.New()
 	mux.Get("/", http.HandlerFunc(chat.Home))
+	mux.Get("/ws", http.HandlerFunc(chat.WsEndpoint))
 	return mux
 }
