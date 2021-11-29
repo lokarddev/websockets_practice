@@ -18,7 +18,7 @@
         </div>
     </div>
 </div>
-<div class="row">
+<div class="row mx-auto my-auto">
     <div class="col-md-8 mx-auto">
         <h3>Chat</h3>
         <div class="form-group">
@@ -38,6 +38,9 @@
     </div>
     <div class="col-md-4  mx-auto">
         <h3>Who's online</h3>
+        <ul id="users">
+
+        </ul>
     </div>
 </div>
 </body>
@@ -47,6 +50,14 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 <script>
     let socket = null;
+
+    window.onbeforeunload = function () {
+        console.log("Disconnected")
+        let jsData = {};
+        jsData["action"] = "left";
+        socket.send(JSON.stringify(jsData))
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         socket = new WebSocket("ws://localhost:8080/ws");
         socket.onopen = () => {
@@ -59,8 +70,29 @@
             console.log("Error occurred: ", error)
         }
         socket.onmessage = msg => {
-            console.log(msg);
+            let j = JSON.parse(msg.data)
+            console.log("Action is: ", j.action)
+            switch (j.action) {
+                case "list_users":
+                    let ul = document.getElementById("users")
+                    while (ul.firstChild) ul.removeChild(ul.firstChild)
+                    if (j.users.length > 0) {
+                        j.users.forEach(function (item){
+                            let li = document.createElement("li");
+                            li.appendChild((document.createTextNode(item)));
+                            ul.appendChild(li);
+                        })
+                    }
+                    break;
+            }
         }
+        let userInput = document.getElementById("username")
+        userInput.addEventListener("change", function () {
+            let jsonData = {};
+            jsonData["action"] = "username";
+            jsonData["username"] = this.value;
+            socket.send(JSON.stringify(jsonData))
+        })
     })
 </script>
 </html>
